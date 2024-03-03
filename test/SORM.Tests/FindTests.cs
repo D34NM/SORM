@@ -89,7 +89,20 @@ public class FindTests
         var context = new MyContext();
 
         // Act
-        var result = await context.MyObjects.FindAllAsync(x => x.Id == "Id" && x.Name == "test");
+        var result = await context.MyCustomObjects.FindAllAsync(x => x.Id == "Id" && x.Name == "test");
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with complex WHERE expression and Order By and LIMIT clause returns null")]
+    public async Task Test8()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = await context.MyCustomObjects.FindAllAsync(x => x.Id == "Id" && x.Name == "test", x => x.Name, false, 10);
 
         // Assert
         Assert.Null(result);

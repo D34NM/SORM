@@ -25,9 +25,7 @@ public class SalesforceObject<T>
     public Task<List<T>> FindAsync(params object[] keys)
     {
         var stringBuilder = new StringBuilder();
-        stringBuilder.Append("SELECT ");
-
-        SelectProperties(stringBuilder);
+        stringBuilder.Append($"SELECT {ParseProperties()}");
 
         var tableAttribute = _type.GetCustomAttribute<TableAttribute>();
 
@@ -79,9 +77,7 @@ public class SalesforceObject<T>
     public Task<List<T>> FindAllAsync(uint limit = 100)
     {
         var stringBuilder = new StringBuilder();
-        stringBuilder.Append("SELECT ");
-
-        SelectProperties(stringBuilder);
+        stringBuilder.Append($"SELECT {ParseProperties()}");
 
         var tableAttribute = _type.GetCustomAttribute<TableAttribute>();
 
@@ -104,9 +100,7 @@ public class SalesforceObject<T>
     public Task<List<T>> FindAllAsync(Expression<Func<T, bool>> predicate, uint limit = 100)
     {
         var stringBuilder = new StringBuilder();
-        stringBuilder.Append("SELECT ");
-
-        SelectProperties(stringBuilder);
+        stringBuilder.Append($"SELECT {ParseProperties()}");
 
         var tableAttribute = _type.GetCustomAttribute<TableAttribute>();
 
@@ -130,8 +124,83 @@ public class SalesforceObject<T>
         return Task.FromResult<List<T>>(null!);
     }
 
-    private void SelectProperties(StringBuilder stringBuilder)
+    public Task<List<T>> FindAllAsync(
+        Expression<Func<T, bool>> predicate, 
+        Expression<Func<T, object>> orderBy, 
+        bool descending = false, 
+        uint limit = 100)
     {
+        var stringBuilder = new StringBuilder();
+        stringBuilder.Append($"SELECT {ParseProperties()}");
+
+        var tableAttribute = _type.GetCustomAttribute<TableAttribute>();
+
+        if (tableAttribute is null)
+        {
+            stringBuilder.Append($" FROM {_type.Name}");
+        }
+        else
+        {
+            stringBuilder.Append($" FROM {tableAttribute.Name}");
+        }
+
+        stringBuilder.Append($" WHERE {ParseExpression(predicate)}");
+
+        stringBuilder.Append($" ORDER BY {ParseOrderByExpression(orderBy)}");
+
+        if (descending)
+        {
+            stringBuilder.Append(" DESC");
+        }
+
+        stringBuilder.Append($" LIMIT {limit}");
+
+        var query = stringBuilder.ToString();
+
+        return Task.FromResult<List<T>>(null!);
+    }
+
+    private string ParseOrderByExpression(Expression<Func<T, object>> orderBy)
+    {
+        var stringBuilder = new StringBuilder();
+
+        if (orderBy.Body is not MemberExpression memberExpression)
+        {
+            throw new InvalidOperationException("Invalid expression.");
+        }
+
+        var property = memberExpression.Member as PropertyInfo;
+
+        if (property is null)
+        {
+            throw new InvalidOperationException("Invalid expression.");
+        }
+
+        var columnAttribute = property.GetCustomAttribute<ColumnAttribute>();
+
+        if (columnAttribute is null)
+        {
+            stringBuilder.Append(property.Name);
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(columnAttribute.Name))
+            {
+                stringBuilder.Append(property.Name);
+            }
+            else
+            {
+                stringBuilder.Append(columnAttribute.Name);
+            }
+        }
+
+        return stringBuilder.ToString();
+    }
+
+    private string ParseProperties()
+    {
+        var stringBuilder = new StringBuilder();
+
         if (string.IsNullOrEmpty(_cachedQuery))
         {
             for (var i = 0; i < _properties.Length; i++)
@@ -219,6 +288,8 @@ public class SalesforceObject<T>
         {
             stringBuilder.Append(_cachedQuery);
         }
+
+        return stringBuilder.ToString();
     }
 
     private string ParseExpression(Expression<Func<T, bool>> predicate)
