@@ -17,7 +17,7 @@ public class FindTests
 		Assert.Null(result);
     }
 
-    [Fact(DisplayName = "FindAsync returns null")]
+    [Fact(DisplayName = "FindAsync with inner SELECT query returns null")]
     public async Task Test2()
     {
         // Arrange
@@ -25,6 +25,71 @@ public class FindTests
 
         // Act
         var result = await context.MyCustomObjects.FindAsync("Id");
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync returns null")]
+    public async Task Test3()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = await context.MyObjects.FindAllAsync();
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with inner SELECT query returns null")]
+    public async Task Test4()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = await context.MyCustomObjects.FindAllAsync();
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with LIMIT clause returns null")]
+    public async Task Test5()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = await context.MyObjects.FindAllAsync(10);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with WHERE expression and LIMIT clause returns null")]
+    public async Task Test6()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = await context.MyObjects.FindAllAsync(x => x.Id == "Id", 10);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with complex WHERE expression clause returns null")]
+    public async Task Test7()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = await context.MyObjects.FindAllAsync(x => x.Id == "Id" && x.Name == "test");
 
         // Assert
         Assert.Null(result);
