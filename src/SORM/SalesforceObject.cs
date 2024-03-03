@@ -351,6 +351,11 @@ public class SalesforceObject<T>
             var oper = binaryExpression.NodeType switch
             {
                 ExpressionType.Equal => "=",
+                ExpressionType.NotEqual => "<>",
+                ExpressionType.GreaterThan => ">",
+                ExpressionType.GreaterThanOrEqual => ">=",
+                ExpressionType.LessThan => "<",
+                ExpressionType.LessThanOrEqual => "<=",
                 _ => throw new InvalidOperationException("Invalid expression.")
             };
 
