@@ -8,5 +8,5 @@ public class Relationship<T> where T : class
 {
     public int TotalSize { get; set; }
 
-    public IEnumerable<T> Records { get; set; }
+    public IEnumerable<T> Records { get; set; } = [];
 }
