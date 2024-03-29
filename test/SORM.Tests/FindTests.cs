@@ -1,111 +1,118 @@
+using System.Text.Json.Serialization;
 using SORM.DataAnnotations;
 
 namespace SORM.Tests;
 
 public class FindTests
 {
-    [Fact(DisplayName = "FindAsync returns null")]
-    public async Task Test1()
+    [Fact(DisplayName = "FindAsync returns SELECT Id,Name__c FROM MyObject WHERE Id = 'Id'")]
+    public void Test1()
     {
         // Arrange
         var context = new MyContext();
 
         // Act
-        var result = await context.MyObjects.FindAsync("Id");
+        var result = context.MyObjects.FindAsync("Id");
 
 		// Assert
-		Assert.Null(result);
+		Assert.Equal("SELECT Id,Name__c FROM MyObject WHERE Id = 'Id'", result);
     }
 
-    [Fact(DisplayName = "FindAsync with inner SELECT query returns null")]
-    public async Task Test2()
+    [Fact(DisplayName = "FindAsync with inner SELECT query returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Id = 'Id'")]
+    public void Test2()
     {
         // Arrange
         var context = new MyContext();
 
         // Act
-        var result = await context.MyCustomObjects.FindAsync("Id");
+        var result = context.MyCustomObjects.FindAsync("Id");
 
         // Assert
-        Assert.Null(result);
+        Assert.Equal("SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Id = 'Id'", result);
     }
 
-    [Fact(DisplayName = "FindAllAsync returns null")]
-    public async Task Test3()
+    [Fact(DisplayName = "FindAllAsync returns SELECT Id,Name__c FROM MyObject LIMIT 100")]
+    public void Test3()
     {
         // Arrange
         var context = new MyContext();
 
         // Act
-        var result = await context.MyObjects.FindAllAsync();
+        var result = context.MyObjects.FindAllAsync();
 
         // Assert
-        Assert.Null(result);
+        Assert.Equal("SELECT Id,Name__c FROM MyObject LIMIT 100", result);
     }
 
-    [Fact(DisplayName = "FindAllAsync with inner SELECT query returns null")]
-    public async Task Test4()
+    [Fact(DisplayName = "FindAllAsync with inner SELECT query returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject LIMIT 100")]
+    public void Test4()
     {
         // Arrange
         var context = new MyContext();
 
         // Act
-        var result = await context.MyCustomObjects.FindAllAsync();
+        var result = context.MyCustomObjects.FindAllAsync();
 
         // Assert
-        Assert.Null(result);
+        Assert.Equal("SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject LIMIT 100", result);
     }
 
-    [Fact(DisplayName = "FindAllAsync with LIMIT clause returns null")]
-    public async Task Test5()
+    [Fact(DisplayName = "FindAllAsync with LIMIT clause returns SELECT Id,Name__c FROM MyObject LIMIT 10")]
+    public void Test5()
     {
         // Arrange
         var context = new MyContext();
 
         // Act
-        var result = await context.MyObjects.FindAllAsync(10);
+        var result = context.MyObjects.FindAllAsync(10);
 
         // Assert
-        Assert.Null(result);
+        Assert.Equal("SELECT Id,Name__c FROM MyObject LIMIT 10", result);
     }
 
-    [Fact(DisplayName = "FindAllAsync with WHERE expression and LIMIT clause returns null")]
-    public async Task Test6()
+    [Fact(DisplayName = "FindAllAsync with WHERE expression and LIMIT clause returns SELECT Id,Name__c FROM MyObject WHERE Id = 'Id' LIMIT 10")]
+    public void Test6()
     {
         // Arrange
         var context = new MyContext();
 
         // Act
-        var result = await context.MyObjects.FindAllAsync(x => x.Id == "Id", 10);
+        var result = context.MyObjects.FindAllAsync(x => x.Id == "Id", 10);
 
         // Assert
-        Assert.Null(result);
+        Assert.Equal("SELECT Id,Name__c FROM MyObject WHERE Id = 'Id' LIMIT 10", result);
     }
 
-    [Fact(DisplayName = "FindAllAsync with complex WHERE expression clause returns null")]
-    public async Task Test7()
+    [Fact(DisplayName = "FindAllAsync with complex WHERE expression clause returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Id = 'Id' AND Name__c = 'test' LIMIT 100")]
+    public void Test7()
     {
         // Arrange
         var context = new MyContext();
 
         // Act
-        var result = await context.MyCustomObjects.FindAllAsync(x => x.Id == "Id" && x.Name == "test");
+        var result = context.MyCustomObjects
+                .FindAllAsync(x => x.Id == "Id" && x.Name == "test");
 
         // Assert
-        Assert.Null(result);
+        Assert.Equal(
+            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Id = 'Id' AND Name__c = 'test' LIMIT 100",
+            result);
     }
 
-    [Fact(DisplayName = "FindAllAsync with complex WHERE expression and Order By and LIMIT clause returns null")]
-    public async Task Test8()
+    [Fact(DisplayName = "FindAllAsync with complex WHERE expression and Order By and LIMIT clause returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Id = 'Id' AND Name__c = 'test' ORDER BY Name__c ASC NULLS FIRST LIMIT 10")]
+    public void Test8()
     {
         // Arrange
         var context = new MyContext();
 
         // Act
-        var result = await context.MyCustomObjects.FindAllAsync(x => x.Id == "Id" && x.Name == "test", x => x.Name, false, 10);
+        var result = context.MyCustomObjects
+                .FindAllAsync(x => x.Id == "Id" && x.Name == "test", by => by.Column(x => x.Name), 10);
 
         // Assert
-        Assert.Null(result);
+        Assert.Equal(
+            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Id = 'Id' AND Name__c = 'test' ORDER BY Name__c ASC NULLS FIRST LIMIT 10", 
+            result);
     }
 }
 
@@ -114,33 +121,33 @@ public class FindTests
 [Table("MyObject")]
 public class MyObject
 {
-    [Column, Key]
+    [Key]
     public required string Id { get; set; }
 
-    [Column("Name__c")]
+    [JsonPropertyName("Name__c")]
     public string Name { get; set; } = string.Empty;
 }
 
 [Table("MyCustomObject")]
 public class MyCustomObject
 {
-    [Column, Key]
+    [Key]
     public required string Id { get; set; }
 
-    [Column("Name__c")]
+    [JsonPropertyName("Name__c")]
     public string Name { get; set; } = string.Empty;
 
-    [Column("MyChildObjects__c")]
-    public List<MyChildObject> MyChildObjects { get; set; } = [];
+    [JsonPropertyName("MyChildObjects__r")]
+    public required Relationship<MyChildObject> MyChildObjects { get; set; }
 }
 
 [Table("MyChildObject")]
 public class MyChildObject
 {
-    [Column, Key]
+    [Key]
     public required string Id { get; set; }
 
-    [Column("Name__c")]
+    [JsonPropertyName("Name__c")]
     public string Name { get; set; } = string.Empty;
 }
 
