@@ -1,9 +1,9 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace SORM;
+namespace SORM.Core.Objects;
 
-internal class GroupBy<T> where T : class
+public sealed class GroupBy<T> where T : class
 {
     private readonly List<PropertyInfo> _properties = [];
     private string _clause = string.Empty;

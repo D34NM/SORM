@@ -1,7 +1,8 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using SORM.DataAnnotations;
+using SORM.Core.Objects;
+using SORM.Core.Objects.Internal;
 
 namespace SORM;
 
@@ -10,7 +11,7 @@ namespace SORM;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class SalesforceObject<T>
-    where T : class
+    where T : SalesforceEntity
 {
     private readonly Type _type;
     private readonly PropertyInfo[] _properties;
@@ -76,7 +77,8 @@ public class SalesforceObject<T>
     public string FindAllAsync(Expression<Func<T, bool>> predicate, uint limit = 100)
     {
         var stringBuilder = new StringBuilder();
-        stringBuilder.Append(new Select<T>())
+        stringBuilder
+            .Append(new Select<T>())
             .Append(' ')
             .Append(new From<T>())
             .Append(' ')
@@ -95,7 +97,8 @@ public class SalesforceObject<T>
         orderBy(orderByValue);
 
         var stringBuilder = new StringBuilder();
-        stringBuilder.Append(new Select<T>())
+        stringBuilder
+            .Append(new Select<T>())
             .Append(' ')
             .Append(new From<T>())
             .Append(' ')

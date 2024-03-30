@@ -1,10 +1,10 @@
-namespace SORM;
+namespace SORM.Core.Objects;
 
 /// <summary>
 /// Represents the Salesforce relationship between two objects. This is used to deserialize the JSON response from Salesforce.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class Relationship<T> where T : class
+public class Relationship<T> where T : SalesforceEntity
 {
     public int TotalSize { get; set; }
 

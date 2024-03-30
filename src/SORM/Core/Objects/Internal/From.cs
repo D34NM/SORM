@@ -1,7 +1,7 @@
 using System.Reflection;
 using SORM.DataAnnotations;
 
-namespace SORM;
+namespace SORM.Core.Objects.Internal;
 
 internal class From<T> where T : class
 {

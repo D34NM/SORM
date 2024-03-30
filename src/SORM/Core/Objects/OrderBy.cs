@@ -1,107 +1,14 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace SORM;
-
-/// <summary>
-/// Specifies the direction in which to order a sequence of records. By default, records are ordered in ascending order.
-/// </summary>
-public enum Direction
-{
-    Ascending,
-    Descending
-}
-
-/// <summary>
-/// Specifies how null records should be ordered. By default, null records are ordered first.
-/// </summary>
-public enum Nulls
-{
-    First,
-    Last
-}
-
-/// <summary>
-/// Represents a LIMIT clause in a SOQL query.
-/// <seealso cref="https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_sosl_limit.htm"/>
-/// </summary>
-public class Limit
-{
-    private readonly uint _limit = 100;
-    private string _clause = string.Empty;
-
-    private Limit(uint limit)
-    {
-		ArgumentOutOfRangeException.ThrowIfGreaterThan<uint>(limit, 2000);
-
-		_limit = limit;
-    }
-
-	public static Limit By(uint limit) => new(limit);
-
-    /// <summary>
-    /// The default 2,000 results is the largest number of rows that can be returned for API version 28.0 and later.
-    /// </summary>
-	public static Limit Max => new(2000);
-
-	public override string ToString()
-    {
-        if (!string.IsNullOrEmpty(_clause))
-        {
-            return _clause;
-        }
-
-        _clause = $"LIMIT {_limit}";
-
-        return _clause;
-    }
-}
-
-/// <summary>
-/// Represents an OFFSET clause in a SOQL query.
-/// <seealso cref="https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_sosl_offset.htm"/>
-/// </summary>
-public class Offset
-{
-    private readonly uint _offset = 0;
-    private string _clause = string.Empty;
-
-    private Offset(uint offset)
-    {
-        ArgumentOutOfRangeException.ThrowIfGreaterThan<uint>(offset, 2000);
-
-        _offset = offset;
-    }
-
-    public static Offset By(uint offset)
-    {
-        return new(offset);
-    }
-
-    /// <summary>
-    /// The maximum offset is 2,000 rows. Requesting an offset greater than 2,000 will result in a System.SearchException: SOSL offset should be between 0 to 2000 error.
-    /// </summary>
-    public static Offset Max => new(2000);
-
-    public override string ToString()
-    {
-        if (!string.IsNullOrEmpty(_clause))
-        {
-            return _clause;
-        }
-
-        _clause = $"OFFSET {_offset}";
-
-        return _clause;
-    }
-}
+namespace SORM.Core.Objects;
 
 /// <summary>
 /// Represents an ORDER BY clause in a SOQL query. 
 /// </summary>
 /// <seealso cref="https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_sosl_select_order_by_with_limit.htm"/>
 /// <typeparam name="T">The custom type used in the query.</typeparam>
-public class OrderBy<T> where T : class
+public sealed class OrderBy<T> where T : class
 {
     private readonly List<PropertyInfo> _properties = [];
 

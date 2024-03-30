@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using SORM.DataAnnotations;
+using SORM.Core.Objects;
 
 namespace SORM.Tests;
 
@@ -138,7 +139,7 @@ public class FindTests
             result);
     }
 
-    [Fact(DisplayName = "FindAllAsync with IN WHERE expression returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IN ('Name 1','Name 2') AND Id = 'Id' LIMIT 100")]
+    [Fact(DisplayName = "FindAllAsync with Enumerable.Contains WHERE expression returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IN ('Name 1','Name 2') AND Id = 'Id' LIMIT 100")]
     public void Test10()
     {
         // Arrange
@@ -154,26 +155,71 @@ public class FindTests
             "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IN ('Name 1','Name 2') AND Id = 'Id' LIMIT 100", 
             result);
     }
+
+    [Fact(DisplayName = "FindAllAsync with string.StartsWith WHERE expression returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c LIKE 'Tes%' LIMIT 100")]
+    public void Test11()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = context.MyCustomObjects
+                .FindAllAsync(
+                    x => x.Name.StartsWith("Tes"));
+
+        // Assert
+        Assert.Equal(
+            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c LIKE 'Tes%' LIMIT 100", 
+            result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with string.EndsWith WHERE expression returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c LIKE '%t' LIMIT 100")]
+    public void Test12()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = context.MyCustomObjects
+                .FindAllAsync(
+                    x => x.Name.EndsWith("t"));
+
+        // Assert
+        Assert.Equal(
+            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c LIKE '%t' LIMIT 100", 
+            result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with string.Contains WHERE expression and LIMIT clause returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c LIKE '%es%' LIMIT 100")]
+    public void Test13()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = context.MyCustomObjects
+                .FindAllAsync(
+                    x => x.Name.Contains("es"));
+
+        // Assert
+        Assert.Equal(
+            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c LIKE '%es%' LIMIT 100", 
+            result);
+    }
 }
 
 #region Test Helpers
 
 [Table("MyObject")]
-public class MyObject
+public class MyObject : SalesforceEntity
 {
-    [Key]
-    public required string Id { get; set; }
-
     [JsonPropertyName("Name__c")]
     public string Name { get; set; } = string.Empty;
 }
 
 [Table("MyCustomObject")]
-public class MyCustomObject
+public class MyCustomObject : SalesforceEntity
 {
-    [Key]
-    public required string Id { get; set; }
-
     [JsonPropertyName("Name__c")]
     public string Name { get; set; } = string.Empty;
 
@@ -182,11 +228,8 @@ public class MyCustomObject
 }
 
 [Table("MyChildObject")]
-public class MyChildObject
+public class MyChildObject : SalesforceEntity
 {
-    [Key]
-    public required string Id { get; set; }
-
     [JsonPropertyName("Name__c")]
     public string Name { get; set; } = string.Empty;
 }
