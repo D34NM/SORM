@@ -1,18 +1,21 @@
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Text.Json.Serialization;
+using System.Text;
 
 namespace SORM;
 
 internal class Where<T> where T : class
 {
-    private readonly BinaryFieldExpression _binaryFieldExpression;
+    private readonly WhereExpression _expression;
 
     public Where(Expression<Func<T, bool>> expression)
     {
         if (expression.Body is BinaryExpression binaryExpression)
         {
-            _binaryFieldExpression = new BinaryFieldExpression(binaryExpression);
+            _expression = new BinaryFieldExpression(binaryExpression);
+        }
+        else if (expression.Body is MethodCallExpression methodCallExpression)
+        {
+            _expression = new MethodExpression(methodCallExpression);
         }
         else
         {
@@ -22,7 +25,7 @@ internal class Where<T> where T : class
 
     public override string ToString()
     {
-        return $"WHERE {_binaryFieldExpression}";
+        return $"WHERE {_expression}";
     }
 }
 
@@ -61,11 +64,74 @@ internal class BinaryFieldExpression : WhereExpression
         {
             _expressions.Add(new FieldExpression(binaryExpression));
         }
+
+        if (left is MethodCallExpression && right is BinaryExpression)
+        {
+            _expressions.Add(new MethodExpression((MethodCallExpression)left));
+            _expressions.Add(new LogicalOperator(binaryExpression));
+            _expressions.Add(new BinaryFieldExpression((BinaryExpression)right));
+        }
+
+        if (left is BinaryExpression && right is MethodCallExpression)
+        {
+            _expressions.Add(new BinaryFieldExpression((BinaryExpression)left));
+            _expressions.Add(new LogicalOperator(binaryExpression));
+            _expressions.Add(new MethodExpression((MethodCallExpression)right));
+        }
     }
 
     public override string ToString()
     {
         return string.Join(" ", _expressions);
+    }
+}
+
+internal class MethodExpression : WhereExpression
+{
+    private readonly MemberExpression _column;
+    private readonly ComparisonOperator _operation;
+    private readonly NewArrayExpression _value;
+    
+
+    public MethodExpression(MethodCallExpression methodCallExpression)
+    {
+        if (methodCallExpression.Arguments[1] is not MemberExpression column)
+        {
+            throw new NotSupportedException($"Expression type {methodCallExpression.Arguments[1].GetType()} is not supported");
+        }
+
+        if (methodCallExpression.Arguments[0] is not NewArrayExpression value)
+        {
+            throw new NotSupportedException($"Expression type {methodCallExpression.Arguments[0].GetType()} is not supported");
+        }
+
+        _column = column;
+        _value = value;
+        _operation = new ComparisonOperator(methodCallExpression);
+    }
+
+	public override string ToString()
+    {
+        var first = _value.Expressions.FirstOrDefault() ?? throw new NotSupportedException($"No values provided.");
+
+		var array = string.Join(",", _value.Expressions.Select(v => 
+        {
+			if (v is not ConstantExpression value)
+			{
+				throw new NotSupportedException($"Expression type {v.GetType()} is not supported");
+			}
+
+			if (value.Type == typeof(string))
+            {
+                return $"'{value.Value}'";
+            }
+            
+            return value.Value;
+        }));
+
+		var name = _column.Member.GetDecoratedOrPropertyName();
+
+        return $"{name} IN ({string.Join(",", array)})";
     }
 }
 
@@ -102,8 +168,7 @@ internal class FieldExpression : WhereExpression
 
     public override string ToString()
     {
-
-        var name = _memberExpression.Member.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? _memberExpression.Member.Name;
+        var name = _memberExpression.Member.GetDecoratedOrPropertyName();
 
         if (_constantExpression.Type == typeof(string))
         {
@@ -128,6 +193,16 @@ internal class ComparisonOperator
         _expressionType = expressionType;
     }
 
+    public ComparisonOperator(MethodCallExpression expressionType)
+    {
+        if (expressionType.Method.Name != "Contains")
+        {
+            throw new NotSupportedException($"Method {expressionType.Method.Name} is not supported");
+        }
+        
+        _expressionType = expressionType.NodeType;
+    }
+
     public override string ToString()
     {
         return _expressionType switch
@@ -138,6 +213,7 @@ internal class ComparisonOperator
             ExpressionType.GreaterThanOrEqual => ">=",
             ExpressionType.LessThan => "<",
             ExpressionType.LessThanOrEqual => "<=",
+            ExpressionType.Call => "IN",
             _ => throw new NotSupportedException($"Comparison operator {_expressionType} is not supported"),
         };
     }

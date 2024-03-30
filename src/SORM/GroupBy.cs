@@ -1,8 +1,7 @@
-namespace SORM;
-
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text.Json.Serialization;
+
+namespace SORM;
 
 internal class GroupBy<T> where T : class
 {
@@ -46,11 +45,11 @@ internal class GroupBy<T> where T : class
 
         var columnNames = _properties.Select(p => 
         {
-            var columnName = p.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name;
-            return columnName ?? p.Name;
+            var columnName = p.GetDecoratedOrPropertyName();
+            return columnName;
         });
 
-        _clause = $" GROUP BY {string.Join(",", columnNames)}";
+        _clause = $"GROUP BY {string.Join(",", columnNames)}";
 
         return _clause;
     }

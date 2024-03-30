@@ -35,15 +35,7 @@ public class SalesforceObject<T>
             .Append(' ')
             .Append(new From<T>());
 
-        var keyProperty = _properties.SingleOrDefault(p => p.GetCustomAttribute<KeyAttribute>() != null) ?? throw new InvalidOperationException("No key attribute found.");
-
-        var keyPropertyName =
-             keyProperty.GetCustomAttribute<ColumnAttribute>()?.Name;
-
-        if (string.IsNullOrWhiteSpace(keyPropertyName))
-        {
-            keyPropertyName = keyProperty.Name;
-        }
+        var keyProperty = _properties.GetKeyProperty();
 
         var expression = Expression.Lambda<Func<T, bool>>(
             Expression.Equal(
@@ -75,7 +67,8 @@ public class SalesforceObject<T>
             .Append(new Select<T>())
             .Append(' ')
             .Append(new From<T>())
-            .Append($" LIMIT {limit}");
+            .Append(' ')
+            .Append(Limit.By(limit));
 
         return stringBuilder.ToString();
     }
@@ -84,32 +77,31 @@ public class SalesforceObject<T>
     {
         var stringBuilder = new StringBuilder();
         stringBuilder.Append(new Select<T>())
-        .Append(' ')
-        .Append(new From<T>())
-        .Append(' ')
-        .Append(new Where<T>(predicate))
-        .Append($" LIMIT {limit}");
+            .Append(' ')
+            .Append(new From<T>())
+            .Append(' ')
+            .Append(new Where<T>(predicate))
+            .Append(' ')
+            .Append(Limit.By(limit));
 
         return stringBuilder.ToString();
     }
 
     public string FindAllAsync(
         Expression<Func<T, bool>> predicate,
-        Action<OrderBy<T>> orderBy,
-        uint limit = 100)
+        Action<OrderBy<T>> orderBy)
     {
         var orderByValue = new OrderBy<T>();
         orderBy(orderByValue);
 
         var stringBuilder = new StringBuilder();
         stringBuilder.Append(new Select<T>())
-        .Append(' ')
-        .Append(new From<T>())
-        .Append(' ')
-        .Append(new Where<T>(predicate))
-        .Append(' ')
-        .Append(orderByValue)
-        .Append($" LIMIT {limit}");
+            .Append(' ')
+            .Append(new From<T>())
+            .Append(' ')
+            .Append(new Where<T>(predicate))
+            .Append(' ')
+            .Append(orderByValue);
 
         return stringBuilder.ToString();
     }

@@ -107,11 +107,51 @@ public class FindTests
 
         // Act
         var result = context.MyCustomObjects
-                .FindAllAsync(x => x.Id == "Id" && x.Name == "test", by => by.Column(x => x.Name), 10);
+                .FindAllAsync(
+                    x => x.Id == "Id" && x.Name == "test", 
+                    by => by.Column(
+                        x => x.Name, 
+                        Direction.Ascending, 
+                        Nulls.First, 
+                        Limit.By(10)));
 
         // Assert
         Assert.Equal(
-            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Id = 'Id' AND Name__c = 'test' ORDER BY Name__c ASC NULLS FIRST LIMIT 10", 
+            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Id = 'Id' AND Name__c = 'test' ORDER BY Name__c ASC NULLS FIRST LIMIT 10 OFFSET 0", 
+            result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with IN WHERE expression returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IN ('Name 1','Name 2') LIMIT 100")]
+    public void Test9()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = context.MyCustomObjects
+                .FindAllAsync(
+                    x => new[] { "Name 1", "Name 2" }.Contains(x.Name));
+
+        // Assert
+        Assert.Equal(
+            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IN ('Name 1','Name 2') LIMIT 100", 
+            result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with IN WHERE expression returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IN ('Name 1','Name 2') AND Id = 'Id' LIMIT 100")]
+    public void Test10()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = context.MyCustomObjects
+                .FindAllAsync(
+                    x => new[] { "Name 1", "Name 2" }.Contains(x.Name) && x.Id == "Id");
+
+        // Assert
+        Assert.Equal(
+            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IN ('Name 1','Name 2') AND Id = 'Id' LIMIT 100", 
             result);
     }
 }

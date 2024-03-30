@@ -1,1 +1,0 @@
-SELECT Name, Owner.Name FROM Account LIMIT 100

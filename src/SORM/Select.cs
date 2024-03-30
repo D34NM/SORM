@@ -1,11 +1,10 @@
 using System.Reflection;
-using System.Text.Json.Serialization;
 
 namespace SORM;
 
 internal class Select<T> where T : class
 {
-    private readonly List<Column> _columns = new();
+    private readonly List<Column> _columns = [];
 
     public Select()
     {
@@ -13,14 +12,10 @@ internal class Select<T> where T : class
 
         foreach (var property in properties)
         {
-            if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+            if (property.IsRelationship())
             {
-                if (property.PropertyType.IsGenericType &&
-                    property.PropertyType.GetGenericTypeDefinition() == typeof(Relationship<>))
-                {
-                    _columns.Add(new RelationshipColumn(property));
-                    continue;
-                }
+                _columns.Add(new RelationshipColumn(property));
+                continue;
             }
 
             _columns.Add(new Column(property));
@@ -29,7 +24,7 @@ internal class Select<T> where T : class
 
     public override string ToString()
     {
-        return $"SELECT {string.Join(",", _columns.Select(p => p.ToString()))}";
+        return $"SELECT {string.Join(",", _columns.Select(c => c.ToString()))}";
     }
 }
 
@@ -41,7 +36,7 @@ internal class Column
     public Column(PropertyInfo property)
     {
         _property = property;
-        _name = _property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? _property.Name;
+        _name = _property.GetDecoratedOrPropertyName();
     }
 
     public override string ToString()
@@ -52,25 +47,19 @@ internal class Column
 
 internal class RelationshipColumn : Column
 {
-    private readonly string _name;
-    private readonly List<Column> _columns = new();
+    private readonly List<Column> _columns = [];
 
     public RelationshipColumn(PropertyInfo property) : base(property)
     {
         var type = property.PropertyType.GetGenericArguments()[0];
         var innerProperties = type.GetProperties();
 
-        _name = property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name;
-
         foreach (var innerProperty in innerProperties)
         {
-            if (innerProperty.PropertyType.IsClass && property.PropertyType != typeof(string))
+            if (innerProperty.IsRelationship())
             {
-                if (innerProperty.PropertyType.IsGenericType &&
-                    innerProperty.PropertyType.GetGenericTypeDefinition() == typeof(Relationship<>))
-                {
-                    throw new NotSupportedException("Nested relationships are not supported");
-                }
+                _columns.Add(new RelationshipColumn(innerProperty));
+                continue;
             }
 
             _columns.Add(new Column(innerProperty));
@@ -81,6 +70,6 @@ internal class RelationshipColumn : Column
     {
         var columns = string.Join(",", _columns.Select(c => c.ToString()));
 
-        return $"(SELECT {columns} FROM {_name})";
+        return $"(SELECT {columns} FROM {base.ToString()})";
     }
 }
