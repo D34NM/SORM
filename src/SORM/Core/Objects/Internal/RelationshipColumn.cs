@@ -8,7 +8,7 @@ internal class RelationshipColumn : Column
 
     public RelationshipColumn(PropertyInfo property) : base(property)
     {
-        var type = property.PropertyType.GetGenericArguments()[0];
+        var type = property.PropertyType.GetGenericArguments().First();
         var innerProperties = type.GetProperties();
 
          foreach (var innerProperty in innerProperties.Where(p => p.DeclaringType == typeof(SalesforceEntity)))
