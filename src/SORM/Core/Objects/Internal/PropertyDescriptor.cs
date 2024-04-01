@@ -8,7 +8,10 @@ internal class PropertyDescriptor(PropertyInfo propertyInfo) : Descriptor
 	public string Name { get; } = propertyInfo.Name;
 	public string ColumnName { get; } = DetermineColumnName(propertyInfo);
 
-    public override bool IsRelationship => false;
+    public PropertyInfo GetPropertyInfo()
+    {
+        return propertyInfo;
+    }
 
 	private static string DetermineColumnName(PropertyInfo propertyInfo)
     {

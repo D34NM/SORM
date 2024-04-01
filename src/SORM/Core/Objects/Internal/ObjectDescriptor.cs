@@ -7,9 +7,7 @@ internal class ObjectDescriptor : Descriptor
 {
     private readonly Type _type;
     private readonly KeyPropertyDescriptor _key;
-    private readonly List<Descriptor> _properties;
-
-    public override bool IsRelationship => false;
+    private readonly List<PropertyDescriptor> _properties;
 
     public string Name { get; }
 
@@ -35,7 +33,7 @@ internal class ObjectDescriptor : Descriptor
             }
             
             if (property.GetCustomAttribute<KeyAttribute>() != null ||
-                property.Name == "Id")
+                property.Name == nameof(SalesforceEntity.Id))
             {
                 _key = new KeyPropertyDescriptor(property);
                 _properties.Add(_key);
@@ -58,13 +56,6 @@ internal class ObjectDescriptor : Descriptor
                 property.PropertyType.GetGenericTypeDefinition() == typeof(Relationship<>))
             {
                 _properties.Add(new RelationshipDescriptor(property));
-                continue;
-            }
-
-            if (property.PropertyType.IsClass &&
-                property.PropertyType != typeof(string))
-            {
-                _properties.Add(new ObjectDescriptor(property.PropertyType));
                 continue;
             }
 

@@ -3,12 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace SORM.Core.Objects.Internal;
 
-internal sealed class RelationshipDescriptor : Descriptor
+internal sealed class RelationshipDescriptor : PropertyDescriptor
 {
     private readonly string _tableName;
     private readonly ObjectDescriptor _type;
 
-	public RelationshipDescriptor(PropertyInfo propertyInfo)
+	public RelationshipDescriptor(PropertyInfo propertyInfo) : base(propertyInfo)
     {
         _type = new ObjectDescriptor(propertyInfo.PropertyType.GetGenericArguments()[0]);
         _tableName = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? $"{_type.Name}__r";

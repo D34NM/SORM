@@ -31,8 +31,9 @@ public class SalesforceObject<T> where T : SalesforceEntity
 
         var stringBuilder = new StringBuilder();
 
+        var select = new Select(_descriptor);
         stringBuilder
-            .Append(new Select(_descriptor))
+            .Append(select)
             .Append(' ')
             .Append(new From(_descriptor));
 
