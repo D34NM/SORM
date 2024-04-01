@@ -34,7 +34,7 @@ public class SalesforceObject<T> where T : SalesforceEntity
         stringBuilder
             .Append(new Select(_descriptor))
             .Append(' ')
-            .Append(new From<T>());
+            .Append(new From(_descriptor));
 
         var keyProperty = _properties.GetKeyProperty();
 
@@ -67,7 +67,7 @@ public class SalesforceObject<T> where T : SalesforceEntity
         stringBuilder
             .Append(new Select(_descriptor))
             .Append(' ')
-            .Append(new From<T>())
+            .Append(new From(_descriptor))
             .Append(' ')
             .Append(Limit.By(limit));
 
@@ -80,7 +80,7 @@ public class SalesforceObject<T> where T : SalesforceEntity
         stringBuilder
             .Append(new Select(_descriptor))
             .Append(' ')
-            .Append(new From<T>())
+            .Append(new From(_descriptor))
             .Append(' ')
             .Append(new Where<T>(predicate))
             .Append(' ')
@@ -100,7 +100,7 @@ public class SalesforceObject<T> where T : SalesforceEntity
         stringBuilder
             .Append(new Select(_descriptor))
             .Append(' ')
-            .Append(new From<T>())
+            .Append(new From(_descriptor))
             .Append(' ')
             .Append(new Where<T>(predicate))
             .Append(' ')
