@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using SORM.DataAnnotations;
-using SORM.Core.Objects;
 
 namespace SORM;
 
@@ -14,22 +13,9 @@ internal static class PropertyInfoExtensions
         return columnAttribute?.Name ?? propertyInfo.Name;
     }
 
-    public static bool IsRelationship(this PropertyInfo propertyInfo)
-    {
-        return propertyInfo.PropertyType.IsClass &&
-               propertyInfo.PropertyType != typeof(string) &&
-               propertyInfo.PropertyType.IsGenericType &&
-               propertyInfo.PropertyType.GetGenericTypeDefinition() == typeof(Relationship<>);
-    }
-
     public static PropertyInfo GetKeyProperty(this IEnumerable<PropertyInfo> propertyInfos)
     {
         return propertyInfos
             .Single(p => p.GetCustomAttribute<KeyAttribute>() != null);
-    }
-
-    public static bool IsResponseOnly(this PropertyInfo propertyInfo)
-    {
-        return propertyInfo.GetCustomAttribute<ResponseOnlyAttribute>() != null;
     }
 }

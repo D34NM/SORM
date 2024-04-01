@@ -23,15 +23,12 @@ internal class ObjectDescriptor : Descriptor
         Name = _type.Name;
         TableName = _type.GetCustomAttribute<TableAttribute>()?.Name ?? _type.Name;
 
-        var properties = type.GetProperties();
+        var properties = type
+            .GetProperties()
+            .Where(p => p.GetCustomAttribute<ResponseOnlyAttribute>() == null);
 
         foreach (var property in properties.Where(p => p.DeclaringType == typeof(SalesforceEntity)))
         {
-            if (property.GetCustomAttribute<ResponseOnlyAttribute>() != null)
-            {
-                continue;
-            }
-            
             if (property.GetCustomAttribute<KeyAttribute>() != null ||
                 property.Name == nameof(SalesforceEntity.Id))
             {
@@ -45,11 +42,6 @@ internal class ObjectDescriptor : Descriptor
 
         foreach (var property in properties.Where(p => p.DeclaringType == type))
         {
-            if (property.GetCustomAttribute<ResponseOnlyAttribute>() != null)
-            {
-                continue;
-            }
-
             if (property.PropertyType.IsClass &&
                 property.PropertyType != typeof(string) &&
                 property.PropertyType.IsGenericType &&

@@ -19,7 +19,11 @@ internal class MethodExpression(MethodCallExpression methodCallExpression) : Whe
 
         if (methodCallExpression.Method.DeclaringType == typeof(Enumerable))
         {
-            return new ArrayExpression(methodCallExpression).ToString();
+            return methodCallExpression.Method.Name switch
+            {
+                nameof(Enumerable.Contains) => new ContainsExpression(methodCallExpression).ToString(),
+                _ => throw new NotSupportedException($"Method {methodCallExpression.Method.Name} is not supported")
+            };
         }
 
         throw new NotSupportedException($"Method {methodCallExpression.Method.Name} is not supported");

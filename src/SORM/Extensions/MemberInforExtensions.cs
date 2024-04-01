@@ -1,7 +1,7 @@
-namespace SORM;
-
 using System.Reflection;
 using System.Text.Json.Serialization;
+
+namespace SORM;
 
 internal static class MemberInfoExtensions
 {
