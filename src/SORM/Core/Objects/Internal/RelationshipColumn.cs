@@ -1,47 +1,36 @@
-using System.Reflection;
-
 namespace SORM.Core.Objects.Internal;
 
 internal class RelationshipColumn : Column
 {
-    private readonly List<Column> _columns = [];
+	private readonly RelationshipDescriptor _property;
 
-    public RelationshipColumn(PropertyInfo property) : base(property)
+	public RelationshipColumn(RelationshipDescriptor property)
     {
-        var type = property.PropertyType.GetGenericArguments().First();
-        var innerProperties = type.GetProperties();
-
-         foreach (var innerProperty in innerProperties.Where(p => p.DeclaringType == typeof(SalesforceEntity)))
-        {
-            if (innerProperty.IsResponseOnly())
-            {
-                continue;
-            }
-
-            _columns.Add(new Column(innerProperty));
-        }
-
-        foreach (var innerProperty in innerProperties.Where(p => p.DeclaringType == type))
-        {
-            if (innerProperty.IsResponseOnly())
-            {
-                continue;
-            }
-            
-            if (innerProperty.IsRelationship())
-            {
-                _columns.Add(new RelationshipColumn(innerProperty));
-                continue;
-            }
-
-            _columns.Add(new Column(innerProperty));
-        }
+        _property = property;
     }
 
-    public override string ToString()
+    public RelationshipColumn(Descriptor property)
     {
-        var columns = string.Join(",", _columns.Select(c => c.ToString()));
+        _property = (RelationshipDescriptor)property;
+    }
 
-        return $"(SELECT {columns} FROM {base.ToString()})";
+	public override string ToString()
+    {
+        var innerProperties = _property.GetProperties();
+
+        List<Column> columns = [];
+
+        foreach (var property in innerProperties)
+        {
+            if (property.IsRelationship)
+            {
+                columns.Add(new RelationshipColumn(property));
+                continue;
+            }
+
+            columns.Add(new FieldColumn(property));
+        }
+
+        return $"(SELECT {string.Join(",", columns.Select(c => c.ToString()))} FROM {_property})";
     }
 }

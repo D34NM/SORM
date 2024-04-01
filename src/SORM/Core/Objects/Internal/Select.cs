@@ -1,39 +1,22 @@
-using System.Reflection;
-
 namespace SORM.Core.Objects.Internal;
 
-internal class Select<T> where T : SalesforceEntity
+internal class Select
 {
     private readonly List<Column> _columns = [];
 
-    public Select()
+    public Select(ObjectDescriptor type)
     {
-        var properties = typeof(T).GetProperties();
+        var properties = type.GetProperties();
 
-        foreach (var property in properties.Where(p => p.DeclaringType == typeof(SalesforceEntity)))
+        foreach (var property in properties)
         {
-            if (property.IsResponseOnly())
-            {
-                continue;
-            }
-
-            _columns.Add(new Column(property));
-        }
-            
-        foreach (var property in properties.Where(p => p.DeclaringType == typeof(T)))
-        {
-            if (property.IsResponseOnly())
-            {
-                continue;
-            }
-
-            if (property.IsRelationship())
+            if (property.IsRelationship)
             {
                 _columns.Add(new RelationshipColumn(property));
                 continue;
             }
 
-            _columns.Add(new Column(property));
+            _columns.Add(new FieldColumn(property));
         }
     }
 

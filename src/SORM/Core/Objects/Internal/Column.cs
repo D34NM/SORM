@@ -1,20 +1,30 @@
-using System.Reflection;
-
 namespace SORM.Core.Objects.Internal;
 
-internal class Column
-{
-    private readonly PropertyInfo _property;
-    private readonly string _name;
 
-    public Column(PropertyInfo property)
+internal abstract class Column()
+{
+	public override string ToString()
     {
-        _property = property;
-        _name = _property.GetDecoratedOrPropertyName();
+        throw new InvalidOperationException("Column name cannot be null");
+    }
+}
+
+internal class FieldColumn : Column
+{
+	private readonly PropertyDescriptor _property;
+
+	public FieldColumn(PropertyDescriptor property)
+    {
+		_property = property;
+	}
+
+    public FieldColumn(Descriptor property)
+    {
+        _property = (PropertyDescriptor)property;
     }
 
     public override string ToString()
     {
-        return _name;
+        return $"{_property.ColumnName}";
     }
 }

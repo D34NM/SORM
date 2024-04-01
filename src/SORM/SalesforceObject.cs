@@ -10,9 +10,9 @@ namespace SORM;
 /// Represents a Salesforce object.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class SalesforceObject<T>
-    where T : SalesforceEntity
+public class SalesforceObject<T> where T : SalesforceEntity
 {
+    private readonly ObjectDescriptor _descriptor = new(typeof(T));
     private readonly Type _type;
     private readonly PropertyInfo[] _properties;
 
@@ -32,7 +32,7 @@ public class SalesforceObject<T>
         var stringBuilder = new StringBuilder();
 
         stringBuilder
-            .Append(new Select<T>())
+            .Append(new Select(_descriptor))
             .Append(' ')
             .Append(new From<T>());
 
@@ -65,7 +65,7 @@ public class SalesforceObject<T>
     {
         var stringBuilder = new StringBuilder();
         stringBuilder
-            .Append(new Select<T>())
+            .Append(new Select(_descriptor))
             .Append(' ')
             .Append(new From<T>())
             .Append(' ')
@@ -78,7 +78,7 @@ public class SalesforceObject<T>
     {
         var stringBuilder = new StringBuilder();
         stringBuilder
-            .Append(new Select<T>())
+            .Append(new Select(_descriptor))
             .Append(' ')
             .Append(new From<T>())
             .Append(' ')
@@ -98,7 +98,7 @@ public class SalesforceObject<T>
 
         var stringBuilder = new StringBuilder();
         stringBuilder
-            .Append(new Select<T>())
+            .Append(new Select(_descriptor))
             .Append(' ')
             .Append(new From<T>())
             .Append(' ')
