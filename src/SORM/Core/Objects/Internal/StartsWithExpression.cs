@@ -11,7 +11,7 @@ internal class StartsWithExpression : MethodExpression
     {
         if (methodCallExpression.Object is not MemberExpression memberExpression)
         {
-            throw new NotSupportedException($"Expression type {methodCallExpression.Object.GetType()} is not supported");
+            throw new NotSupportedException($"Expression type {methodCallExpression} is not supported");
         }
 
         _column = memberExpression;
