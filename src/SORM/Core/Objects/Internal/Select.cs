@@ -16,6 +16,12 @@ internal class Select
                 continue;
             }
 
+            if (property.IsSalesforceObject)
+            {
+                _columns.Add(new SalesforceObjectColumn(property));
+                continue;
+            }
+
             _columns.Add(new FieldColumn(property));
         }
     }

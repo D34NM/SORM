@@ -206,6 +206,71 @@ public class FindTests
             "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c LIKE '%es%' LIMIT 100", 
             result);
     }
+
+    [Fact(DisplayName = "FindAllAsync with string.IsNullOrEmpty WHERE expression returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IS NULL OR Name__c = '' LIMIT 100")]
+    public void Test14()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = context.MyCustomObjects
+                .FindAllAsync(
+                    x => string.IsNullOrEmpty(x.Name));
+
+        // Assert
+        Assert.Equal(
+            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IS NULL OR Name__c = '' LIMIT 100", 
+            result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with string.IsNullOrWhiteSpace WHERE expression returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IS NULL OR Name__c = '' LIMIT 100")]
+    public void Test15()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = context.MyCustomObjects
+                .FindAllAsync(
+                    x => string.IsNullOrWhiteSpace(x.Name));
+
+        // Assert
+        Assert.Equal(
+            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IS NULL OR Name__c = '' LIMIT 100", 
+            result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with string.IsNullOrEmpty WHERE expression and LIMIT clause returns SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IS NULL OR Name__c = '' LIMIT 10")]
+    public void Test16()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = context.MyCustomObjects
+                .FindAllAsync(
+                    x => string.IsNullOrEmpty(x.Name), 
+                    10);
+
+        // Assert
+        Assert.Equal(
+            "SELECT Id,Name__c,(SELECT Id,Name__c FROM MyChildObjects__r) FROM MyCustomObject WHERE Name__c IS NULL OR Name__c = '' LIMIT 10", 
+            result);
+    }
+
+    [Fact(DisplayName = "FindAllAsync with SalesforceObject WHERE expression returns SELECT Id,Name__c, MyChildObject__r.Name__c FROM MyObjectWithChild WHERE Id = 'Id' LIMIT 100")]
+    public void Test17()
+    {
+        // Arrange
+        var context = new MyContext();
+
+        // Act
+        var result = context.MyObjectWithChild.FindAllAsync(x => x.Id == "Id");
+
+        // Assert
+        Assert.Equal("SELECT Id,Name__c,MyChildObject__r.Id,MyChildObject__r.Name__c FROM MyObjectWithChild WHERE Id = 'Id' LIMIT 100", result);
+    }
 }
 
 #region Test Helpers
@@ -234,15 +299,27 @@ public class MyChildObject : SalesforceEntity
     public string Name { get; set; } = string.Empty;
 }
 
+[Table("MyObjectWithChild")]
+public class MyObjectWithChild : SalesforceEntity
+{
+    [JsonPropertyName("Name__c")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("MyChildObject__r")]
+    public required MyChildObject MyChildObject { get; set; }
+}
+
 public class MyContext : SalesforceContext
 {
     public SalesforceObject<MyObject> MyObjects { get; }
     public SalesforceObject<MyCustomObject> MyCustomObjects { get; }
+    public SalesforceObject<MyObjectWithChild> MyObjectWithChild { get; }
 
     public MyContext()
     {
         MyObjects = new SalesforceObject<MyObject>();
         MyCustomObjects = new SalesforceObject<MyCustomObject>();
+        MyObjectWithChild = new SalesforceObject<MyObjectWithChild>();
     }
 }
 

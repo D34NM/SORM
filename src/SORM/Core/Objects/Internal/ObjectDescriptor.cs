@@ -51,6 +51,14 @@ internal class ObjectDescriptor : Descriptor
                 continue;
             }
 
+            if (property.PropertyType.IsClass &&
+                property.PropertyType != typeof(string) &&
+                property.PropertyType.IsSubclassOf(typeof(SalesforceEntity)))
+            {
+                _properties.Add(new SalesforceObjectDescriptor(property));
+                continue;
+            }
+
             _properties.Add(new PropertyDescriptor(property));
         }
 

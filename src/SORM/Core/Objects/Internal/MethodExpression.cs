@@ -13,6 +13,9 @@ internal class MethodExpression(MethodCallExpression methodCallExpression) : Whe
                 nameof(string.Contains) => new ContainsExpression(methodCallExpression).ToString(),
                 nameof(string.StartsWith) => new StartsWithExpression(methodCallExpression).ToString(),
                 nameof(string.EndsWith) => new EndsWithExpression(methodCallExpression).ToString(),
+                nameof(string.Equals) => new EqualsExpression(methodCallExpression).ToString(),
+                nameof(string.IsNullOrEmpty) => new IsNullOrEmptyExpression(methodCallExpression).ToString(),
+                nameof(string.IsNullOrWhiteSpace) => new IsNullOrEmptyExpression(methodCallExpression).ToString(),
                 _ => throw new NotSupportedException($"Method {methodCallExpression.Method.Name} is not supported")
             };
         }
@@ -21,7 +24,7 @@ internal class MethodExpression(MethodCallExpression methodCallExpression) : Whe
         {
             return methodCallExpression.Method.Name switch
             {
-                nameof(Enumerable.Contains) => new ContainsExpression(methodCallExpression).ToString(),
+                nameof(Enumerable.Contains) => new ArrayExpression(methodCallExpression).ToString(),
                 _ => throw new NotSupportedException($"Method {methodCallExpression.Method.Name} is not supported")
             };
         }
