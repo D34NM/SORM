@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
+using SORM.Core.Objects.Internal.SOQL.Expressions;
 
-namespace SORM.Core.Objects.Internal;
+namespace SORM.Core.Objects.Internal.SOQL;
 
 internal class Where<T> where T : class
 {

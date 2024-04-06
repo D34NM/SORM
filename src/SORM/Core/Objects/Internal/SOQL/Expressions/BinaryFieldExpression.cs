@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace SORM.Core.Objects.Internal;
+namespace SORM.Core.Objects.Internal.SOQL.Expressions;
 
 internal class BinaryFieldExpression : WhereExpression
 {
@@ -13,21 +13,21 @@ internal class BinaryFieldExpression : WhereExpression
         if (left is BinaryExpression && right is BinaryExpression)
         {
             _expressions.Add(new BinaryFieldExpression((BinaryExpression)left));
-            _expressions.Add(new LogicalOperator(binaryExpression));
+            _expressions.Add(new LogicalOperatorExpression(binaryExpression));
             _expressions.Add(new BinaryFieldExpression((BinaryExpression)right));
         }
 
         if (left is BinaryExpression && right is MemberExpression)
         {
             _expressions.Add(new BinaryFieldExpression((BinaryExpression)left));
-            _expressions.Add(new LogicalOperator(binaryExpression));
+            _expressions.Add(new LogicalOperatorExpression(binaryExpression));
             _expressions.Add(new FieldExpression(binaryExpression));
         }
 
         if (left is MemberExpression && right is BinaryExpression)
         {
             _expressions.Add(new FieldExpression(binaryExpression));
-            _expressions.Add(new LogicalOperator(binaryExpression));
+            _expressions.Add(new LogicalOperatorExpression(binaryExpression));
             _expressions.Add(new BinaryFieldExpression((BinaryExpression)right));
         }
 
@@ -39,14 +39,14 @@ internal class BinaryFieldExpression : WhereExpression
         if (left is MethodCallExpression && right is BinaryExpression)
         {
             _expressions.Add(new MethodExpression((MethodCallExpression)left));
-            _expressions.Add(new LogicalOperator(binaryExpression));
+            _expressions.Add(new LogicalOperatorExpression(binaryExpression));
             _expressions.Add(new BinaryFieldExpression((BinaryExpression)right));
         }
 
         if (left is BinaryExpression && right is MethodCallExpression)
         {
             _expressions.Add(new BinaryFieldExpression((BinaryExpression)left));
-            _expressions.Add(new LogicalOperator(binaryExpression));
+            _expressions.Add(new LogicalOperatorExpression(binaryExpression));
             _expressions.Add(new MethodExpression((MethodCallExpression)right));
         }
     }

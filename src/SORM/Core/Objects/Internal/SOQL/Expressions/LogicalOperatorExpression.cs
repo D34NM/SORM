@@ -1,8 +1,9 @@
 using System.Linq.Expressions;
+using SORM.Core.Objects.Internal.SOQL.Expressions;
 
-namespace SORM.Core.Objects.Internal;
+namespace SORM.Core.Objects.Internal.SOQL.Expressions;
 
-internal class LogicalOperator(BinaryExpression binaryExpression) : WhereExpression
+internal class LogicalOperatorExpression(BinaryExpression binaryExpression) : WhereExpression
 {
     public override string ToString()
     {

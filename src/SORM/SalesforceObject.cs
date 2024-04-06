@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using SORM.Core.Objects;
 using SORM.Core.Objects.Internal;
+using SORM.Core.Objects.Internal.SOQL;
 
 namespace SORM;
 

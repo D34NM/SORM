@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace SORM.Core.Objects.Internal;
+namespace SORM.Core.Objects.Internal.SOQL;
 
 internal class SalesforceObjectColumn : Column
 {

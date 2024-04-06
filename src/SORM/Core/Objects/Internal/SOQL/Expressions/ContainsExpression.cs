@@ -1,13 +1,13 @@
 using System.Linq.Expressions;
 
-namespace SORM.Core.Objects.Internal;
+namespace SORM.Core.Objects.Internal.SOQL.Expressions;
 
-internal class EndsWithExpression : MethodExpression
+internal class ContainsExpression : MethodExpression
 {
     private readonly MemberExpression _column;
     private readonly ConstantExpression _value;
 
-    public EndsWithExpression(MethodCallExpression methodCallExpression) : base(methodCallExpression)
+    public ContainsExpression(MethodCallExpression methodCallExpression) : base(methodCallExpression)
     {
         if (methodCallExpression.Object is not MemberExpression memberExpression)
         {
@@ -23,6 +23,6 @@ internal class EndsWithExpression : MethodExpression
         var name = _column.Member.GetDecoratedOrPropertyName();
         var value = _value.Value;
 
-        return $"{name} LIKE '%{value}'";
+        return $"{name} LIKE '%{value}%'";
     }
 }

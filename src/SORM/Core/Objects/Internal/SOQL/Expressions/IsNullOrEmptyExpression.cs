@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace SORM.Core.Objects.Internal;
+namespace SORM.Core.Objects.Internal.SOQL.Expressions;
 
 internal class IsNullOrEmptyExpression : MethodExpression
 {
