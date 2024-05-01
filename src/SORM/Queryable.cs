@@ -11,13 +11,13 @@ namespace SORM;
 /// Represents a Salesforce object.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class SalesforceObject<T> where T : SalesforceEntity
+public class Queryable<T> where T : SalesforceObject 
 {
     private readonly ObjectDescriptor _descriptor = new(typeof(T));
     private readonly Type _type;
     private readonly PropertyInfo[] _properties;
 
-    public SalesforceObject()
+    public Queryable()
     {
         _type = typeof(T);
         _properties = _type.GetProperties();

@@ -27,10 +27,11 @@ internal class ObjectDescriptor : Descriptor
             .GetProperties()
             .Where(p => p.GetCustomAttribute<ResponseOnlyAttribute>() == null);
 
-        foreach (var property in properties.Where(p => p.DeclaringType == typeof(SalesforceEntity)))
+        foreach (var property in properties.Where(p => 
+            p.DeclaringType!.IsGenericType && p.DeclaringType.GetGenericTypeDefinition() == typeof(SalesforceObject<>)))
         {
             if (property.GetCustomAttribute<KeyAttribute>() != null ||
-                property.Name == nameof(SalesforceEntity.Id))
+                property.Name == nameof(SalesforceObject.Id))
             {
                 _key = new KeyPropertyDescriptor(property);
                 _properties.Add(_key);
@@ -53,7 +54,7 @@ internal class ObjectDescriptor : Descriptor
 
             if (property.PropertyType.IsClass &&
                 property.PropertyType != typeof(string) &&
-                property.PropertyType.IsSubclassOf(typeof(SalesforceEntity)))
+                property.PropertyType.BaseType == typeof(SalesforceObject))
             {
                 _properties.Add(new SalesforceObjectDescriptor(property));
                 continue;
@@ -62,7 +63,7 @@ internal class ObjectDescriptor : Descriptor
             _properties.Add(new PropertyDescriptor(property));
         }
 
-        if (_key == null)
+        if (_key is null)
         {
             throw new InvalidOperationException($"Entity {_type.Name} does not have a key property.");
         }

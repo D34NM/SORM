@@ -27,11 +27,11 @@ internal class ArrayExpression : MethodExpression
     {
         var first = _value.Expressions.FirstOrDefault() ?? throw new NotSupportedException($"No values provided.");
 
-		var array = string.Join(",", _value.Expressions.Select(v => 
+		var array = string.Join(",", _value.Expressions.Select(exp => 
         {
-			if (v is not ConstantExpression value)
+			if (exp is not ConstantExpression value)
 			{
-				throw new NotSupportedException($"Expression type {v.GetType()} is not supported");
+				throw new NotSupportedException($"Expression type {exp.GetType()} is not supported");
 			}
 
 			if (value.Type == typeof(string))

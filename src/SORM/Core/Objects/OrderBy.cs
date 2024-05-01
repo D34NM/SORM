@@ -13,7 +13,7 @@ public sealed class OrderBy<T> where T : class
     private readonly List<PropertyInfo> _properties = [];
 
     private Direction _direction = Direction.Ascending;
-    private Nulls _nulls = Nulls.First;
+    private NullsOrdering _nullsOrdering = NullsOrdering.First;
     private Limit _limit = Limit.By(100);
     private Offset _offset = Offset.By(0);
 
@@ -22,19 +22,19 @@ public sealed class OrderBy<T> where T : class
     public void Column(
         Expression<Func<T, object>> by,
         Direction direction = Direction.Ascending,
-        Nulls nulls = Nulls.First,
+        NullsOrdering nulls = NullsOrdering.First,
         Limit? limit = default,
         Offset? offset = default)
     {
         _direction = direction;
-        _nulls = nulls;
+        _nullsOrdering = nulls;
         
-        if (limit is not null)
+        if (limit != null)
         {
             _limit = limit;
         }
 
-        if (offset is not null)
+        if (offset != null)
         {
             _offset = offset;
         }
@@ -54,11 +54,11 @@ public sealed class OrderBy<T> where T : class
 
     public void Columns(
         Direction direction = Direction.Ascending,
-        Nulls nulls = Nulls.First,
+        NullsOrdering nulls = NullsOrdering.First,
         params Expression<Func<T, object>>[] expressions)
     {
         _direction = direction;
-        _nulls = nulls;
+        _nullsOrdering = nulls;
 
         foreach (var expression in expressions)
         {
@@ -85,9 +85,9 @@ public sealed class OrderBy<T> where T : class
         });
 
         var direction = _direction == Direction.Ascending ? "ASC" : "DESC";
-        var nulls = _nulls == Nulls.First ? "FIRST" : "LAST";
+        var nullsOrdering = _nullsOrdering == NullsOrdering.First ? "FIRST" : "LAST";
 
-        _clause = $"ORDER BY {string.Join(",", columnNames)} {direction} NULLS {nulls} {_limit} {_offset}";
+        _clause = $"ORDER BY {string.Join(",", columnNames)} {direction} NULLS {nullsOrdering} {_limit} {_offset}";
 
         return _clause;
     }
