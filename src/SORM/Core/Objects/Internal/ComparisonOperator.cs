@@ -18,7 +18,7 @@ internal class ComparisonOperator
 
     public ComparisonOperator(MethodCallExpression expressionType)
     {
-        if (expressionType.Method.Name != "Contains")
+        if (expressionType.Method.Name != nameof(Enumerable.Contains))
         {
             throw new NotSupportedException($"Method {expressionType.Method.Name} is not supported");
         }

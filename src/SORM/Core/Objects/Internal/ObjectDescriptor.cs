@@ -28,7 +28,8 @@ internal class ObjectDescriptor : Descriptor
             .Where(p => p.GetCustomAttribute<ResponseOnlyAttribute>() == null);
 
         foreach (var property in properties.Where(p => 
-            p.DeclaringType!.IsGenericType && p.DeclaringType.GetGenericTypeDefinition() == typeof(SalesforceObject<>)))
+            p.DeclaringType!.IsGenericType && 
+            p.DeclaringType.GetGenericTypeDefinition() == typeof(SalesforceObject<>)))
         {
             if (property.GetCustomAttribute<KeyAttribute>() != null ||
                 property.Name == nameof(SalesforceObject.Id))
@@ -44,7 +45,6 @@ internal class ObjectDescriptor : Descriptor
         foreach (var property in properties.Where(p => p.DeclaringType == type))
         {
             if (property.PropertyType.IsClass &&
-                property.PropertyType != typeof(string) &&
                 property.PropertyType.IsGenericType &&
                 property.PropertyType.GetGenericTypeDefinition() == typeof(Relationship<>))
             {
@@ -53,7 +53,6 @@ internal class ObjectDescriptor : Descriptor
             }
 
             if (property.PropertyType.IsClass &&
-                property.PropertyType != typeof(string) &&
                 property.PropertyType.BaseType == typeof(SalesforceObject))
             {
                 _properties.Add(new SalesforceObjectDescriptor(property));
